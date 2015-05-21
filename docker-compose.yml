@@ -1,0 +1,36 @@
+postgres:
+  image: postgres:9.4
+  expose:
+   - "5432"
+  volumes_from:
+   - datavolume
+datavolume:
+  image: postgres:9.4
+  volumes:
+    - /var/lib/postgresql/data
+jira:
+  build: jira/
+  ports: 
+    - "8080:8080"
+  links:
+   - postgres
+stash:
+  build: stash/
+  ports: 
+    - "7990:7990"
+    - "7999:7999"
+  links:
+   - jira
+bamboo:
+  build: bamboo/
+  ports: 
+    - "8085:8085"
+    - "54663:54663"
+  links:
+   - jira
+confluence:
+  build: confluence/
+  ports: 
+    - "8090:8090"
+  links:
+   - jira
