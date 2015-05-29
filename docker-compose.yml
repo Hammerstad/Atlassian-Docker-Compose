@@ -1,10 +1,10 @@
-postgres:
+jirapostgres:
   image: postgres:9.4
   expose:
    - "5432"
   volumes_from:
-   - datavolume
-datavolume:
+   - jiradatavolume
+jiradatavolume:
   image: postgres:9.4
   volumes:
     - /var/lib/postgresql/data
@@ -13,7 +13,18 @@ jira:
   ports: 
     - "8080:8080"
   links:
-   - postgres
+   - jirapostgres
+
+stashpostgres:
+  image: postgres:9.4
+  expose:
+   - "5432"
+  volumes_from:
+   - stashdatavolume
+stashdatavolume:
+  image: postgres:9.4
+  volumes:
+    - /var/lib/postgresql/data
 stash:
   build: stash/
   ports: 
@@ -21,6 +32,28 @@ stash:
     - "7999:7999"
   links:
    - jira
+   - stashpostgres
+   - jirapostgres
+
+confluencepostgres:
+  image: postgres:9.4
+  expose:
+   - "5432"
+  volumes_from:
+   - confluencedatavolume
+confluencedatavolume:
+  image: postgres:9.4
+  volumes:
+    - /var/lib/postgresql/data
+confluence:
+  build: confluence/
+  ports: 
+    - "8090:8090"
+  links:
+   - jira
+   - confluencepostgres
+   - jirapostgres
+
 bamboo:
   build: bamboo/
   ports: 
@@ -28,9 +61,4 @@ bamboo:
     - "54663:54663"
   links:
    - jira
-confluence:
-  build: confluence/
-  ports: 
-    - "8090:8090"
-  links:
-   - jira
+   - jirapostgres
